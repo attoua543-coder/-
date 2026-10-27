@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Video Streamer</title>
+    <style>
+      :root {
+        --bg: #0a1020;
+        --bg-soft: #121b2d;
+        --panel: rgba(18, 27, 45, 0.94);
+        --panel-2: #1b2942;
+        --primary: #4cc9f0;
+        --primary-2: #7b61ff;
+        --success: #22c55e;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --text: #e5ecff;
+        --muted: #9dadcc;
+        --border: rgba(163, 180, 211, 0.18);
+        --shadow: 0 20px 40px rgba(2, 8, 22, 0.55);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: radial-gradient(circle at top, #101c30 0%, var(--bg) 60%);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 24px;
+      }
+
+      .app-shell {
+        width: min(100%, 1320px);
+        min-height: 850px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .hidden { display: none !important; }
+
+      .login-screen,
+      .dashboard {
+        background: rgba(11, 17, 29, 0.85);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .login-screen {
+        width: min(100%, 440px);
+        margin: 0 auto;
+        padding: 28px 26px;
+      }
+
+      .brand {
+        text-align: center;
+        margin-bottom: 18px;
+      }
+
+      .brand-badge {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 10px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        font-size: 2rem;
+        box-shadow: 0 12px 30px rgba(76, 201, 240, 0.35);
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 2rem;
+      }
+
+      .brand p {
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .field label {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .field input {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        color: var(--text);
+        padding: 12px 14px;
+        font-size: 1rem;
+        outline: none;
+      }
+
+      .field input:focus {
+        border-color: rgba(124, 97, 255, 0.8);
+        box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.18);
+      }
+
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: var(--muted);
+      }
+
+      .btn {
+        border: none;
+        border-radius: 14px;
+        padding: 12px 18px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #06111d;
+      }
+
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 18px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 4px 8px;
+      }
+
+      .topbar h2 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+
+      .user-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #08131d;
+        font-weight: 800;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+        flex: 1;
+      }
+
+      .panel {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 18px;
+      }
+
+      .upload-zone {
+        border: 1.5px dashed rgba(124, 97, 255, 0.45);
+        background: rgba(123, 97, 255, 0.05);
+        min-height: 260px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+
+      .upload-zone.dragover {
+        border-color: var(--primary);
+        background: rgba(76, 201, 240, 0.08);
+      }
+
+      .upload-zone-inner {
+        text-align: center;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .upload-icon {
+        font-size: 2rem;
+      }
+
+      .video-preview-wrap {
+        width: 100%;
+        display: none;
+      }
+
+      .video-preview-wrap.active {
+        display: block;
+      }
+
+      video {
+        width: 100%;
+        max-height: 420px;
+        border-radius: 16px;
+        background: #000;
+      }
+
+      .video-meta {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .settings-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .field input[type="password"],
+      .field input[type="text"] {
+        width: 100%;
+      }
+
+      .password-wrap {
+        position: relative;
+      }
+
+      .password-wrap input {
+        padding-left: 42px;
+      }
+
+      .toggle-password {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      .checkbox-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+
+      .checkbox-inline input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+      }
+
+      .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .start-btn {
+        min-width: 220px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+      }
+
+      .start-btn.stop {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+      }
+
+      .status-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        min-width: 220px;
+      }
+
+      .status-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--warning);
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.7);
+      }
+
+      .status-dot.live {
+        background: var(--danger);
+        box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);
+      }
+
+      .status-dot.connecting {
+        background: var(--primary);
+        box-shadow: 0 0 16px rgba(76, 201, 240, 0.8);
+      }
+
+      .status-dot.idle {
+        background: #6b7280;
+        box-shadow: none;
+      }
+
+      .timer {
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .log-box {
+        margin-top: 12px;
+        min-height: 180px;
+        max-height: 200px;
+        overflow: auto;
+        background: rgba(4, 8, 18, 0.8);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 12px 14px;
+        color: #d8e3ff;
+        font-family: Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 980px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <section id="loginScreen" class="login-screen">
+        <div class="brand">
+          <div class="brand-badge">▶</div>
+          <h1>Live Streamer</h1>
+          <p>تسجيل الدخول إلى لوحة التحكم</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+          <div class="field">
+            <label for="username">اسم المستخدم</label>
+            <input id="username" type="text" placeholder="أدخل اسم المستخدم" required />
+          </div>
+
+          <div class="field">
+            <label for="password">كلمة المرور</label>
+            <input id="password" type="password" placeholder="أدخل كلمة المرور" />
+          </div>
+
+          <div class="checkbox-row">
+            <label>تذكرني</label>
+            <input id="rememberMe" type="checkbox" />
+          </div>
+
+          <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
+          <button type="button" id="quickLoginBtn" class="btn btn-ghost">دخول سريع</button>
+        </form>
+      </section>
+
+      <section id="dashboard" class="dashboard hidden">
+        <div class="topbar">
+          <h2>لوحة التحكم الرئيسية</h2>
+          <div class="user-pill">
+            <div class="user-avatar" id="userInitial">U</div>
+            <span id="userNameLabel">المستخدم</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="panel">
+            <div id="dropZone" class="upload-zone">
+              <div class="upload-zone-inner">
+                <div class="upload-icon">📁</div>
+                <div>اسحب الفيديو هنا ��و انقر للاختيار</div>
+                <small>MP4, MKV, AVI, MOV</small>
+              </div>
+            </div>
+
+            <input id="videoInput" type="file" accept="video/mp4,video/x-matroska,video/avi,video/quicktime" hidden />
+
+            <div id="videoPreviewWrap" class="video-preview-wrap">
+              <video id="videoPreview" controls playsinline></video>
+              <div class="video-meta">
+                <span id="fileNameBadge" class="badge">اسم الفيديو</span>
+                <span id="durationBadge" class="badge">المدة: 00:00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel settings-grid">
+            <div class="field">
+              <label for="rtmpUrl">رابط خادم البث (RTMP)</label>
+              <input id="rtmpUrl" type="text" value="rtmp://a.rtmp.youtube.com/live2" placeholder="rtmp://..." />
+            </div>
+
+            <div class="field">
+              <label for="streamKey">مفتاح البث</label>
+              <div class="password-wrap">
+                <input id="streamKey" type="password" placeholder="أدخل مفتاح البث" />
+                <button type="button" id="toggleStreamKey" class="toggle-password" aria-label="إظهار/إخفاء">👁</button>
+              </div>
+            </div>
+
+            <label class="checkbox-inline">
+              <input id="loopVideo" type="checkbox" />
+              <span>تكرار الفيديو تلقائياً</span>
+            </label>
+
+            <div class="controls-row">
+              <button id="streamBtn" class="btn start-btn" type="button">بدء البث المباشر</button>
+
+              <div class="status-box" aria-live="polite">
+                <span id="statusDot" class="status-dot idle"></span>
+                <div>
+                  <div id="statusText">غير متصل</div>
+                  <div id="timer" class="timer">00:00:00</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label style="display:block; margin-bottom:8px; color: var(--muted);">سجل العمليات (FFmpeg Console Logs)</label>
+              <div id="logBox" class="log-box">جاهز للاتصال...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const loginScreen = document.getElementById('loginScreen');
+      const dashboard = document.getElementById('dashboard');
+      const loginForm = document.getElementById('loginForm');
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const rememberMe = document.getElementById('rememberMe');
+      const quickLoginBtn = document.getElementById('quickLoginBtn');
+      const userNameLabel = document.getElementById('userNameLabel');
+      const userInitial = document.getElementById('userInitial');
+
+      const dropZone = document.getElementById('dropZone');
+      const videoInput = document.getElementById('videoInput');
+      const videoPreview = document.getElementById('videoPreview');
+      const videoPreviewWrap = document.getElementById('videoPreviewWrap');
+      const fileNameBadge = document.getElementById('fileNameBadge');
+      const durationBadge = document.getElementById('durationBadge');
+
+      const rtmpUrlInput = document.getElementById('rtmpUrl');
+      const streamKeyInput = document.getElementById('streamKey');
+      const toggleStreamKeyBtn = document.getElementById('toggleStreamKey');
+      const loopVideoCheckbox = document.getElementById('loopVideo');
+      const streamBtn = document.getElementById('streamBtn');
+      const statusText = document.getElementById('statusText');
+      const timerEl = document.getElementById('timer');
+      const logBox = document.getElementById('logBox');
+      const statusDot = document.getElementById('statusDot');
+
+      let selectedFile = null;
+      let streamTimer = null;
+      let streamSeconds = 0;
+      let isStreaming = false;
+
+      function setDashboardState(isLoggedIn) {
+        loginScreen.classList.toggle('hidden', isLoggedIn);
+        dashboard.classList.toggle('hidden', !isLoggedIn);
+      }
+
+      function getCurrentUser() {
+        return JSON.parse(localStorage.getItem('streamerUser') || 'null');
+      }
+
+      function saveUser(user) {
+        localStorage.setItem('streamerUser', JSON.stringify(user));
+      }
+
+      function applyLoggedUser(user) {
+        const displayName = user?.username || 'المستخدم';
+        userNameLabel.textContent = displayName;
+        userInitial.textContent = displayName.charAt(0).toUpperCase();
+        setDashboardState(true);
+      }
+
+      function restoreSession() {
+        const user = getCurrentUser();
+        if (user) {
+          applyLoggedUser(user);
+        }
+      }
+
+      function logMessage(message) {
+        const timestamp = new Date().toLocaleTimeString('ar-EG');
+        logBox.textContent += `\n[${timestamp}] ${message}`;
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+
+      function updateStatus(state, text) {
+        statusText.textContent = text;
+        statusDot.className = 'status-dot';
+
+        if (state === 'live') {
+          statusDot.classList.add('live');
+        } else if (state === 'connecting') {
+          statusDot.classList.add('connecting');
+        } else {
+          statusDot.classList.add('idle');
+        }
+      }
+
+      function formatDuration(totalSeconds) {
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+      }
+
+      function startTimer() {
+        stopTimer();
+        streamTimer = setInterval(() => {
+          streamSeconds += 1;
+          timerEl.textContent = formatDuration(streamSeconds);
+        }, 1000);
+      }
+
+      function stopTimer() {
+        if (streamTimer) {
+          clearInterval(streamTimer);
+          streamTimer = null;
+        }
+      }
+
+      function resetStreamState() {
+        stopTimer();
+        streamSeconds = 0;
+        timerEl.textContent = '00:00:00';
+        isStreaming = false;
+        streamBtn.textContent = 'بدء البث المباشر';
+        streamBtn.classList.remove('stop');
+        updateStatus('idle', 'غير متصل');
+      }
+
+      function parseVideoDuration(file) {
+        return new Promise((resolve) => {
+          const url = URL.createObjectURL(file);
+          const video = document.createElement('video');
+          video.preload = 'metadata';
+
+          video.onloadedmetadata = () => {
+            const duration = Number.isFinite(video.duration) ? video.duration : 0;
+            URL.revokeObjectURL(url);
+            resolve(duration);
+          };
+
+          video.src = url;
+        });
+      }
+
+      async function handleFileSelection(file) {
+        if (!file) return;
+
+        const validExtensions = ['mp4', 'mkv', 'avi', 'mov'];
+        const fileType = (file.name.split('.').pop() || '').toLowerCase();
+
+        if (!validExtensions.includes(fileType)) {
+          alert('صيغة الملف غير مدعومة. استخدم MP4, MKV, AVI أو MOV.');
+          return;
+        }
+
+        selectedFile = file;
+        const objectUrl = URL.createObjectURL(file);
+        videoPreview.src = objectUrl;
+        videoPreviewWrap.classList.add('active');
+        fileNameBadge.textContent = file.name;
+
+        const duration = await parseVideoDuration(file);
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        durationBadge.textContent = `المدة: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        logMessage(`تم اختيار الفيديو: ${file.name}`);
+      }
+
+      function onDragOver(event) {
+        event.preventDefault();
+        dropZone.classList.add('dragover');
+      }
+
+      function onDragLeave() {
+        dropZone.classList.remove('dragover');
+      }
+
+      function onDrop(event) {
+        event.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = event.dataTransfer.files?.[0];
+        if (file) handleFileSelection(file);
+      }
+
+      dropZone.addEventListener('click', () => videoInput.click());
+      dropZone.addEventListener('dragover', onDragOver);
+      dropZone.addEventListener('dragleave', onDragLeave);
+      dropZone.addEventListener('drop', onDrop);
+      videoInput.addEventListener('change', (event) => handleFileSelection(event.target.files?.[0]));
+
+      loginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!username) {
+          alert('الرجاء إدخال اسم المستخدم.');
+          return;
+        }
+
+        const user = { username, password, rememberMe: rememberMe.checked };
+
+        if (rememberMe.checked) {
+          saveUser(user);
+        } else {
+          localStorage.removeItem('streamerUser');
+        }
+
+        applyLoggedUser(user);
+        logMessage(`تم تسجيل الدخول بنجاح باسم: ${username}`);
+      });
+
+      quickLoginBtn.addEventListener('click', () => {
+        const quickUser = { username: 'Guest User', password: '', rememberMe: true };
+        saveUser(quickUser);
+        applyLoggedUser(quickUser);
+        logMessage('تم الدخول السريع بنجاح.');
+      });
+
+      toggleStreamKeyBtn.addEventListener('click', () => {
+        const isPassword = streamKeyInput.type === 'password';
+        streamKeyInput.type = isPassword ? 'text' : 'password';
+        toggleStreamKeyBtn.textContent = isPassword ? '🙈' : '👁';
+      });
+
+      streamBtn.addEventListener('click', async () => {
+        if (!selectedFile) {
+          alert('يرجى اختيار ملف فيديو أولاً.');
+          return;
+        }
+
+        const rtmpUrl = rtmpUrlInput.value.trim();
+        const streamKey = streamKeyInput.value.trim();
+
+        if (!rtmpUrl || !streamKey) {
+          alert('يرجى إدخال رابط خادم البث ومفتاح البث.');
+          return;
+        }
+
+        if (!isStreaming) {
+          const result = await window.electronAPI.startStream({
+            videoPath: selectedFile.path,
+            rtmpUrl,
+            streamKey,
+            loopEnabled: loopVideoCheckbox.checked
+          });
+
+          if (!result || !result.ok) {
+            alert(result?.message || 'فشل بدء البث.');
+            return;
+          }
+
+          isStreaming = true;
+          streamBtn.textContent = 'إيقاف البث';
+          streamBtn.classList.add('stop');
+          updateStatus('connecting', 'جاري الاتصال');
+          startTimer();
+          logMessage(`بدء البث على ${rtmpUrl} مع تكرار: ${loopVideoCheckbox.checked ? 'نعم' : 'لا'}`);
+          return;
+        }
+
+        const stopResult = await window.electronAPI.stopStream();
+        if (stopResult && stopResult.ok) {
+          resetStreamState();
+          logMessage('تم إيقاف البث يدويًا.');
+        }
+      });
+
+      window.electronAPI.onStreamState((status) => {
+        if (status.state === 'live') {
+          updateStatus('live', 'مباشر الآن 🔴');
+          isStreaming = true;
+          streamBtn.textContent = 'إيقاف البث';
+          streamBtn.classList.add('stop');
+          if (!streamTimer) startTimer();
+          logMessage('تم الاتصال بالخادم بنجاح: مباشر الآن 🔴');
+          return;
+        }
+
+        if (status.state === 'connecting') {
+          updateStatus('connecting', status.details || 'جاري الاتصال');
+          logMessage(status.details || 'جارٍ الاتصال بالخادم...');
+          return;
+        }
+
+        if (status.state === 'offline') {
+          resetStreamState();
+          logMessage(status.details || 'تم إيقاف البث.');
+        }
+      });
+
+      window.electronAPI.onFfmpegLog((data) => {
+        const text = String(data || '').trim();
+        if (!text) return;
+        logBox.textContent += `\n${text}`;
+        logBox.scrollTop = logBox.scrollHeight;
+      });
+
+      window.electronAPI.onStreamError((message) => {
+        resetStreamState();
+        logMessage(`خطأ في البث: ${message}`);
+        alert(`حدث خطأ أثناء البث: ${message}`);
+      });
+
+      restoreSession();
+      logMessage('جاهز للاتصال...');
+    </script>
+  </body>
+</html>

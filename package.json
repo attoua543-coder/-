@@ -1,0 +1,22 @@
+{
+  "name": "live-video-streamer",
+  "version": "1.0.0",
+  "description": "Desktop app for streaming pre-recorded video to RTMP via FFmpeg using Electron + HTML/CSS/JS",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron ."
+  },
+  "keywords": [
+    "electron",
+    "ffmpeg",
+    "rtmp",
+    "streaming",
+    "desktop-app"
+  ],
+  "author": "GitHub Copilot",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}
